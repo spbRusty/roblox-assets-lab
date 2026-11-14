@@ -92,8 +92,13 @@ const rifle = new THREE.Group()
 scene.add(rifle)
 
 const loader = new FBXLoader()
+const modelStatus = document.createElement('div')
+modelStatus.className = 'model-error'
+modelStatus.textContent = 'Загрузка 3D-модели…'
+host.appendChild(modelStatus)
+const modelUrl = new URL(`${import.meta.env.BASE_URL}models/Quaternius_AssaultRifle2_1.fbx`, window.location.origin).toString()
 loader.load(
-  './models/Quaternius_AssaultRifle2_1.fbx',
+  modelUrl,
   (model) => {
     model.name = 'Quaternius_AssaultRifle'
     model.traverse((node) => {
@@ -118,6 +123,7 @@ loader.load(
     const longest = Math.max(size.x, size.y, size.z)
     model.scale.setScalar(9.2 / longest)
     rifle.add(model)
+    modelStatus.remove()
 
     const fitted = new THREE.Box3().setFromObject(rifle)
     const fittedSize = fitted.getSize(new THREE.Vector3())
@@ -130,9 +136,8 @@ loader.load(
   (error) => {
     console.error('Не удалось загрузить модель Quaternius:', error)
     const message = document.createElement('div')
-    message.className = 'model-error'
-    message.textContent = 'Не удалось загрузить 3D-модель'
-    host.appendChild(message)
+    modelStatus.textContent = 'Не удалось загрузить 3D-модель. Проверьте доступ к файлу FBX.'
+    modelStatus.title = String(error)
   },
 )
 
