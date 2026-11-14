@@ -57,3 +57,40 @@ footer a:hover { color: #fff; }
 #viewer canvas { position:relative; z-index:1; }
 
 .model-error { position:absolute; inset:0; display:grid; place-items:center; color:#e3a49a; font:12px monospace; pointer-events:none; }
+
+
+/* SVG preview: does not depend on WebGL or GPU support */
+.weapon-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(91,111,94,.20), transparent 58%),
+    linear-gradient(180deg, #171e19 0%, #121713 100%);
+}
+.weapon-stage.dragging { cursor: grabbing; }
+.weapon-model {
+  display: block;
+  width: min(100%, 1040px);
+  height: min(100%, 500px);
+  overflow: visible;
+  transform-origin: 50% 50%;
+  transition: filter .2s ease;
+  filter: drop-shadow(0 24px 20px rgba(0,0,0,.42));
+  user-select: none;
+  pointer-events: none;
+}
+.weapon-stage::after {
+  content: ' ';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(151,170,151,.24), transparent);
+  pointer-events: none;
+}
