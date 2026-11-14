@@ -54,7 +54,8 @@ footer a:hover { color: #fff; }
   *, *::before, *::after { scroll-behavior: auto !important; }
 }
 #rifle-fallback { position:absolute; inset:0; width:100%; height:100%; padding:7% 5%; }
-#viewer canvas { position:relative; z-index:1; }
+#viewer canvas { position:absolute; inset:0; z-index:0; width:100%; height:100%; display:block; }
+.viewer-label, .viewer-hint { z-index:2; }
 
 .model-error { position:absolute; inset:0; display:grid; place-items:center; color:#e3a49a; font:12px monospace; pointer-events:none; }
 
