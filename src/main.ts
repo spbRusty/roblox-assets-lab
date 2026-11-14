@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import './style.css'
 
 const host = document.querySelector<HTMLDivElement>('#viewer')
@@ -21,20 +20,44 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.toneMappingExposure = 1.15
 host.appendChild(renderer.domElement)
 
-const controls = new OrbitControls(camera, renderer.domElement)
-controls.enableRotate = true
-controls.enablePan = false
-controls.enableDamping = true
-controls.dampingFactor = 0.065
-controls.target.set(0, 0, 0)
-camera.lookAt(0, 0, 0)
-controls.minDistance = 5
-controls.maxDistance = 35
-controls.maxPolarAngle = Math.PI * 0.94
-controls.minPolarAngle = 0.08
-controls.enableZoom = true
-controls.zoomSpeed = 0.8
-controls.update()
+// Управление вращением напрямую через pointer events: ЛКМ + движение мыши.
+let dragging = false
+let lastX = 0
+let lastY = 0
+const rotateSpeed = 0.008
+renderer.domElement.style.touchAction = 'none'
+renderer.domElement.style.cursor = 'grab'
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return
+  dragging = true
+  lastX = event.clientX
+  lastY = event.clientY
+  renderer.domElement.setPointerCapture(event.pointerId)
+  renderer.domElement.style.cursor = 'grabbing'
+})
+renderer.domElement.addEventListener('pointermove', (event) => {
+  if (!dragging) return
+  const dx = event.clientX - lastX
+  const dy = event.clientY - lastY
+  lastX = event.clientX
+  lastY = event.clientY
+  rifle.rotation.y += dx * rotateSpeed
+  rifle.rotation.x = THREE.MathUtils.clamp(rifle.rotation.x + dy * rotateSpeed, -Math.PI * 0.48, Math.PI * 0.48)
+})
+const stopDragging = () => {
+  dragging = false
+  renderer.domElement.style.cursor = 'grab'
+}
+renderer.domElement.addEventListener('pointerup', stopDragging)
+renderer.domElement.addEventListener('pointercancel', stopDragging)
+renderer.domElement.addEventListener('lostpointercapture', stopDragging)
+renderer.domElement.addEventListener('wheel', (event) => {
+  event.preventDefault()
+  camera.position.multiplyScalar(event.deltaY > 0 ? 1.08 : 0.92)
+  const distance = camera.position.length()
+  if (distance < 5) camera.position.setLength(5)
+  if (distance > 35) camera.position.setLength(35)
+}, { passive: false })
 
 scene.add(new THREE.HemisphereLight(0xc9d8d1, 0x252923, 2.0))
 const key = new THREE.DirectionalLight(0xfff0d8, 3.1)
@@ -311,8 +334,6 @@ rifle.position.set(-center.x, -center.y, -center.z)
 
 camera.position.set(0, 2.1, 9.5)
 camera.lookAt(0, 0, 0)
-controls.target.set(0, 0, 0)
-controls.update()
 
 function resize() {
   if (!host) return
@@ -329,14 +350,12 @@ resize()
 const clock = new THREE.Clock()
 function animate() {
   requestAnimationFrame(animate)
-  controls.update()
   renderer.render(scene, camera)
 }
 animate()
 
 window.addEventListener('beforeunload', () => {
   observer.disconnect()
-  controls.dispose()
   renderer.dispose()
   clock.stop()
 })
