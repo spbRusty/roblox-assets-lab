@@ -58,3 +58,5 @@ footer a:hover { color: #fff; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
 }
+#rifle-fallback { position:absolute; inset:0; width:100%; height:100%; padding:7% 5%; }
+#viewer canvas { position:relative; z-index:1; }
