@@ -11,7 +11,7 @@ scene.background = new THREE.Color('#151a17')
 scene.fog = new THREE.Fog('#151a17', 18, 38)
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-camera.position.set(0, 2.8, 13)
+camera.position.set(0, 2.1, 9.5)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -199,7 +199,7 @@ const bounds = new THREE.Box3().setFromObject(rifle)
 const center = bounds.getCenter(new THREE.Vector3())
 rifle.position.set(-center.x, -center.y, -center.z)
 
-camera.position.set(0, 2.8, 13)
+camera.position.set(0, 2.1, 9.5)
 camera.lookAt(0, 0, 0)
 controls.target.set(0, 0, 0)
 controls.update()
@@ -217,7 +217,7 @@ observer.observe(host)
 resize()
 
 document.querySelector<HTMLButtonElement>('#front')?.addEventListener('click', () => {
-  camera.position.set(0, 2.8, 13)
+  camera.position.set(0, 2.1, 9.5)
   controls.target.set(0, 0, 0)
 })
 document.querySelector<HTMLButtonElement>('#top')?.addEventListener('click', () => {
