@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import './style.css'
 
 const host = document.querySelector<HTMLDivElement>('#viewer')
@@ -23,13 +22,18 @@ renderer.toneMappingExposure = 1.15
 host.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement)
+controls.enableRotate = true
+controls.enablePan = false
 controls.enableDamping = true
 controls.dampingFactor = 0.065
 controls.target.set(0, 0, 0)
 camera.lookAt(0, 0, 0)
 controls.minDistance = 5
 controls.maxDistance = 35
-controls.maxPolarAngle = Math.PI * 0.88
+controls.maxPolarAngle = Math.PI * 0.94
+controls.minPolarAngle = 0.08
+controls.enableZoom = true
+controls.zoomSpeed = 0.8
 controls.update()
 
 scene.add(new THREE.HemisphereLight(0xc9d8d1, 0x252923, 2.0))
@@ -194,6 +198,112 @@ for (const side of [-1, 1]) {
 box('Rear_Sling_Lug', -3, -0.32, 0, 0.18, 0.16, 0.94, materials.metal)
 box('Front_Sling_Lug', 2.55, -0.34, 0, 0.16, 0.14, 0.9, materials.metal)
 
+
+// Дополнительная геометрия: крепёж, фактура, шарниры и мелкие узлы.
+function cylinderZ(name: string, x: number, y: number, z: number, diameter: number, depth: number, material: THREE.Material) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(diameter / 2, diameter / 2, depth, 16), material)
+  mesh.name = name
+  mesh.position.set(x, y, z)
+  mesh.rotation.x = Math.PI / 2
+  mesh.castShadow = true
+  mesh.receiveShadow = true
+  rifle.add(mesh)
+  return mesh
+}
+function torus(name: string, x: number, y: number, z: number, radius: number, tube: number, material: THREE.Material, axis: 'x' | 'y' | 'z' = 'z') {
+  const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 10, 28), material)
+  mesh.name = name
+  mesh.position.set(x, y, z)
+  if (axis === 'x') mesh.rotation.y = Math.PI / 2
+  if (axis === 'y') mesh.rotation.x = Math.PI / 2
+  mesh.castShadow = true
+  rifle.add(mesh)
+  return mesh
+}
+
+// Телескопический узел приклада и его направляющие.
+cylinderX('Stock_Buffer_Tube', -2.85, 0.02, 0, 1.05, 0.42, materials.dark)
+cylinderX('Stock_Buffer_Collar', -3.25, 0.02, 0, 0.14, 0.62, materials.metal)
+for (let i = 0; i < 5; i++) {
+  box('Stock_Cheek_Ridge', -4.65 + i * 0.25, 0.49, 0, 0.1, 0.045, 0.72, materials.dark)
+  box('Stock_Side_Groove_L', -4.85 + i * 0.31, 0.02, -0.424, 0.17, 0.055, 0.025, materials.dark)
+  box('Stock_Side_Groove_R', -4.85 + i * 0.31, 0.02, 0.424, 0.17, 0.055, 0.025, materials.dark)
+}
+box('Stock_Adjust_Button', -3.35, -0.25, 0.48, 0.18, 0.22, 0.08, materials.metal)
+torus('Rear_Sling_Ring', -5.12, -0.35, 0, 0.22, 0.045, materials.metal, 'x')
+
+// Фактура цевья: продольные рёбра и отдельные вентиляционные прорези.
+for (let side of [-1, 1]) {
+  for (let i = 0; i < 11; i++) {
+    const x = 0.92 + i * 0.22
+    box('Handguard_Rib', x, 0.405, side * 0.24, 0.11, 0.055, 0.32, materials.main)
+    box('Handguard_Vent_Inner', x, 0.035, side * 0.418, 0.105, 0.055, 0.018, materials.dark)
+  }
+  for (let i = 0; i < 8; i++) {
+    const x = 1.18 + i * 0.25
+    cylinderZ('Handguard_Bolt', x, 0.22, side * 0.435, 0.075, 0.035, materials.metal)
+    box('Handguard_Bolt_Slot', x, 0.22, side * 0.458, 0.04, 0.009, 0.008, materials.dark)
+  }
+}
+
+// Дульный тормоз с видимыми боковыми портами и ступенчатым основанием.
+cylinderX('Muzzle_Collar', 4.42, 0.02, 0, 0.18, 0.31, materials.metal)
+cylinderX('Muzzle_Outer_Sleeve', 4.82, 0.02, 0, 0.34, 0.39, materials.main)
+for (let side of [-1, 1]) {
+  for (let i = 0; i < 3; i++) {
+    box('Muzzle_Port', 4.68 + i * 0.11, 0.13, side * 0.17, 0.075, 0.09, 0.025, materials.dark, -12)
+    box('Muzzle_Port_Lower', 4.68 + i * 0.11, -0.09, side * 0.17, 0.075, 0.07, 0.025, materials.dark, 12)
+  }
+}
+
+// Детализация ствольной коробки: штифты, швы панелей и органы управления.
+for (let side of [-1, 1]) {
+  for (const [x, y] of [[-1.75, 0.05], [-1.05, 0.05], [-0.15, 0.05], [0.55, 0.05]] as const) {
+    cylinderZ('Receiver_Pin', x, y, side * 0.49, 0.14, 0.045, materials.metal)
+    cylinderZ('Receiver_Pin_Core', x, y, side * 0.518, 0.045, 0.012, materials.dark)
+  }
+  box('Receiver_Seam', -0.25, -0.25, side * 0.47, 1.45, 0.025, 0.018, materials.dark)
+  box('Selector_Indicator', -0.76, 0.17, side * 0.49, 0.22, 0.025, 0.018, materials.metal, -18)
+  cylinderZ('Bolt_Catch', -1.22, -0.12, side * 0.5, 0.13, 0.05, materials.metal)
+  box('Bolt_Catch_Tab', -1.28, -0.13, side * 0.54, 0.2, 0.07, 0.045, materials.dark)
+}
+
+// Увеличенная фактура рукояти и пятка магазина.
+for (let side of [-1, 1]) {
+  for (let i = 0; i < 6; i++) {
+    box('Grip_Checkering', -0.83, -0.73 - i * 0.12, side * 0.335, 0.34, 0.025, 0.018, materials.dark, -8)
+  }
+  for (let i = 0; i < 4; i++) {
+    box('Magazine_Groove', 0.18, -0.72 - i * 0.16, side * 0.325, 0.5, 0.025, 0.018, materials.dark, -5)
+  }
+}
+box('Magazine_Release', 0.62, -0.1, 0.51, 0.18, 0.12, 0.08, materials.metal)
+box('Magazine_Follower_Lip', 0.18, -0.56, 0, 0.55, 0.06, 0.5, materials.metal)
+
+// Оптика: защитные бленды, барабаны поправок и насечки.
+cylinderX('Optic_Sunshade_Front', 0.57, 1.2, 0, 0.18, 0.57, materials.dark)
+cylinderX('Optic_Sunshade_Rear', -0.57, 1.2, 0, 0.14, 0.56, materials.dark)
+cylinderX('Optic_Ring_Trim_Front', 0.68, 1.2, 0, 0.035, 0.52, materials.metal)
+cylinderX('Optic_Ring_Trim_Rear', -0.66, 1.2, 0, 0.035, 0.52, materials.metal)
+cylinderY('Optic_Windage', 0.0, 1.48, 0.34, 0.2, 0.22, materials.metal)
+cylinderY('Optic_Elevation', 0.0, 1.48, -0.34, 0.2, 0.22, materials.metal)
+for (let i = 0; i < 12; i++) {
+  const a = (i / 12) * Math.PI * 2
+  box('Optic_Turret_Knurled', Math.cos(a) * 0.15, 1.61, Math.sin(a) * 0.15, 0.045, 0.055, 0.045, materials.dark)
+}
+
+// Прицельные планки, крепления и ременные проушины.
+for (let i = 0; i < 18; i++) {
+  box('Rail_Groove_Left', -1.35 + i * 0.19, 0.81, -0.17, 0.045, 0.018, 0.025, materials.dark)
+  box('Rail_Groove_Right', -1.35 + i * 0.19, 0.81, 0.17, 0.045, 0.018, 0.025, materials.dark)
+}
+for (let side of [-1, 1]) {
+  box('Rail_Clamp_Front', 0.35, 0.87, side * 0.24, 0.18, 0.1, 0.08, materials.metal)
+  box('Rail_Clamp_Rear', -0.32, 0.87, side * 0.24, 0.18, 0.1, 0.08, materials.metal)
+}
+torus('Front_Sling_Ring', 2.62, -0.42, 0, 0.2, 0.04, materials.metal, 'x')
+box('Sling_Swivel_Base', 2.58, -0.34, 0, 0.24, 0.12, 0.72, materials.dark)
+
 // Центрируем модель и выставляем гарантированно близкий боковой ракурс.
 const bounds = new THREE.Box3().setFromObject(rifle)
 const center = bounds.getCenter(new THREE.Vector3())
@@ -215,31 +325,6 @@ function resize() {
 const observer = new ResizeObserver(resize)
 observer.observe(host)
 resize()
-
-document.querySelector<HTMLButtonElement>('#front')?.addEventListener('click', () => {
-  camera.position.set(0, 2.1, 9.5)
-  controls.target.set(0, 0, 0)
-})
-document.querySelector<HTMLButtonElement>('#top')?.addEventListener('click', () => {
-  camera.position.set(0, 15, 0.01)
-  controls.target.set(0, 0, 0)
-})
-document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
-  camera.position.set(0, 2.8, 13)
-  controls.target.set(0, 0, 0)
-})
-
-document.querySelector<HTMLButtonElement>('#download')?.addEventListener('click', () => {
-  const exporter = new OBJExporter()
-  const obj = exporter.parse(rifle)
-  const blob = new Blob([obj], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'R01_Rifle.obj'
-  link.click()
-  URL.revokeObjectURL(url)
-})
 
 const clock = new THREE.Clock()
 function animate() {
