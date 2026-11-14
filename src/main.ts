@@ -11,7 +11,7 @@ scene.background = new THREE.Color('#151a17')
 scene.fog = new THREE.Fog('#151a17', 18, 38)
 
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100)
-camera.position.set(8.8, 5.2, 10.5)
+camera.position.set(0, 4.0, 16)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -26,6 +26,7 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 controls.dampingFactor = 0.065
 controls.target.set(0, 0, 0)
+camera.lookAt(0, 0, 0)
 controls.minDistance = 5
 controls.maxDistance = 23
 controls.maxPolarAngle = Math.PI * 0.88
@@ -196,11 +197,20 @@ box('Front_Sling_Lug', 2.55, -0.34, 0, 0.16, 0.14, 0.9, materials.metal)
 // Центрируем объект относительно его геометрического центра
 const bounds = new THREE.Box3().setFromObject(rifle)
 const center = bounds.getCenter(new THREE.Vector3())
-rifle.position.sub(center)
+const size = bounds.getSize(new THREE.Vector3())
+rifle.position.set(-center.x, -center.y, -center.z)
+
+// Подбираем дистанцию по габаритам модели, чтобы она целиком попадала в кадр.
+const maxDimension = Math.max(size.x, size.y, size.z)
+const fitDistance = (maxDimension / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+camera.position.set(0, Math.max(2.8, size.y * 0.8), Math.max(14, fitDistance * 1.18))
+camera.lookAt(0, 0, 0)
+controls.target.set(0, 0, 0)
+controls.update()
 
 function resize() {
   if (!host) return
-  const width = host.clientWidth
+  const width = Math.max(host.clientWidth, 1)
   const height = Math.max(host.clientHeight, 320)
   camera.aspect = width / height
   camera.updateProjectionMatrix()
@@ -211,7 +221,7 @@ observer.observe(host)
 resize()
 
 document.querySelector<HTMLButtonElement>('#front')?.addEventListener('click', () => {
-  camera.position.set(0, 2.4, 15)
+  camera.position.set(0, 3.0, 16)
   controls.target.set(0, 0, 0)
 })
 document.querySelector<HTMLButtonElement>('#top')?.addEventListener('click', () => {
@@ -219,7 +229,7 @@ document.querySelector<HTMLButtonElement>('#top')?.addEventListener('click', () 
   controls.target.set(0, 0, 0)
 })
 document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
-  camera.position.set(8.8, 5.2, 10.5)
+  camera.position.set(0, 4.0, 16)
   controls.target.set(0, 0, 0)
 })
 
