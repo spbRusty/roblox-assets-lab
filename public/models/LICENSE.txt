@@ -1,0 +1,6 @@
+Model: AssaultRifle2_1.fbx
+Original asset: Quaternius — Ultimate Gun Pack (July 2019)
+Source: https://quaternius.com/packs/ultimategun.html
+Mirror/source listing: https://opengameart.org/content/low-poly-guns-pack
+License: CC0 1.0 Universal (public domain dedication).
+The FBX file is an unmodified model file from the Quaternius pack.
