@@ -3,6 +3,7 @@ import './style.css'
 
 const host = document.querySelector<HTMLDivElement>('#viewer')
 if (!host) throw new Error('3D viewer container was not found')
+const viewer: HTMLDivElement = host
 
 host.innerHTML = ''
 host.style.position = 'absolute'
@@ -144,14 +145,14 @@ renderer.domElement.addEventListener('wheel',(e)=>{
 },{passive:false})
 
 function resize() {
-  const width = Math.max(host.clientWidth,1)
-  const height = Math.max(host.clientHeight,320)
+  const width = Math.max(viewer.clientWidth,1)
+  const height = Math.max(viewer.clientHeight,320)
   camera.aspect=width/height
   camera.updateProjectionMatrix()
   renderer.setSize(width,height,false)
 }
 const observer=new ResizeObserver(resize)
-observer.observe(host)
+observer.observe(viewer)
 window.addEventListener('resize',resize)
 resize()
 
