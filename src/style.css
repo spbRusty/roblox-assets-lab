@@ -30,9 +30,6 @@ h1 span { color: #849084; font-size: .52em; letter-spacing: .04em; vertical-alig
 .live-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: #9bb58e; box-shadow: 0 0 10px #9bb58e88; }
 .separator { color: #58645a; margin: 0 7px; }
 .viewer-hint { position: absolute; left: 20px; bottom: 20px; color: #778279; font-size: 9px; pointer-events: none; }
-.viewer-controls { position: absolute; right: 16px; bottom: 14px; display: flex; gap: 6px; }
-.viewer-controls button { min-height: 36px; padding: 0 13px; border: 1px solid #465249; background: #1b221d; color: #c4cec5; font: 10px 'IBM Plex Mono', monospace; letter-spacing: .08em; cursor: pointer; }
-.viewer-controls button:hover { border-color: #a1b398; color: #fff; }
 .details { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 25px 0 28px; border-bottom: 1px solid #29312b; }
 .detail-block { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
 .detail-key { color: #78847a; font-size: 9px; }
@@ -51,8 +48,6 @@ footer a:hover { color: #fff; }
   .viewer-wrap { height: 390px; }
   .details { grid-template-columns: repeat(2, 1fr); gap: 22px 12px; }
   .viewer-hint { font-size: 8px; }
-  .viewer-controls { right: 10px; bottom: 10px; gap: 4px; }
-  .viewer-controls button { padding: 0 9px; min-height: 34px; font-size: 9px; }
   footer { gap: 12px; font-size: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
