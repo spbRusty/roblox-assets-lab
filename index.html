@@ -4,31 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101311" />
-    <meta name="description" content="Интерактивная 3D-витрина процедурных ассетов Roblox Assets Lab." />
-    <title>Roblox Assets Lab — 3D-витрина</title>
+    <meta name="description" content="Интерактивная 3D-галерея игровых ассетов Roblox Assets Lab." />
+    <title>Roblox Assets Lab — 3D-галерея</title>
   </head>
   <body>
     <div id="app">
       <header class="topbar">
         <a class="brand" href="./"><span class="brand-mark">RL</span><span>ROBLOX ASSETS LAB</span></a>
-        <span class="top-note">БИБЛИОТЕКА АССЕТОВ / 001</span>
+        <span class="top-note">БИБЛИОТЕКА АССЕТОВ / 002</span>
       </header>
       <main class="layout">
         <section class="intro">
-          <div class="eyebrow">ГОТОВАЯ 3D-МОДЕЛЬ · QUATERNIUS</div>
-          <h1>ASSAULT RIFLE <span>QUATERNIUS</span></h1>
-          <p>Готовая 3D-модель Quaternius. Зажми левую кнопку мыши и вращай модель. Колесо мыши — масштаб.</p>
+          <div class="eyebrow" id="asset-eyebrow">ГОТОВАЯ 3D-МОДЕЛЬ · QUATERNIUS</div>
+          <h1 id="asset-title">ASSAULT RIFLE <span>R-01</span></h1>
+          <p id="asset-description">Детализированная игровая винтовка. Зажми левую кнопку мыши и вращай модель. Колесо мыши — масштаб.</p>
         </section>
-        <section class="viewer-wrap" aria-label="Интерактивная 3D-модель винтовки">
-          <div id="viewer">
-            
-          </div>
-          <div class="viewer-label"><span class="live-dot"></span> LIVE PREVIEW <span class="separator">/</span> R-01</div>
+        <section class="gallery-section" aria-label="Галерея моделей">
+          <div class="gallery-heading"><span>ГАЛЕРЕЯ</span><span>ВЫБЕРИ МОДЕЛЬ</span></div>
+          <div id="gallery" class="gallery"></div>
+        </section>
+        <section class="viewer-wrap" aria-label="Интерактивная 3D-модель">
+          <div id="viewer"></div>
+          <div class="viewer-label" id="viewer-code"><span class="live-dot"></span> LIVE PREVIEW <span class="separator">/</span> R-01</div>
           <div class="viewer-hint">DRAG TO ROTATE&nbsp;&nbsp;·&nbsp;&nbsp;SCROLL TO ZOOM</div>
         </section>
-        <section class="details">
+        <section class="details" id="asset-details">
           <div class="detail-block"><span class="detail-key">ТИП</span><strong>Штурмовая винтовка</strong></div>
-          <div class="detail-block"><span class="detail-key">МОДЕЛЬ</span><strong>FBX · готовая геометрия</strong></div>
+          <div class="detail-block"><span class="detail-key">МОДЕЛЬ</span><strong>3D · процедурная геометрия</strong></div>
           <div class="detail-block"><span class="detail-key">АВТОР</span><strong>Quaternius · CC0</strong></div>
           <div class="detail-block"><span class="detail-key">СТАТУС</span><strong class="status">Демонстрационная модель</strong></div>
         </section>
