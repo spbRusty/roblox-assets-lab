@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101311" />
+    <meta name="description" content="Интерактивная 3D-витрина процедурных ассетов Roblox Assets Lab." />
+    <title>Roblox Assets Lab — 3D-витрина</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <a class="brand" href="./"><span class="brand-mark">RL</span><span>ROBLOX ASSETS LAB</span></a>
+        <span class="top-note">БИБЛИОТЕКА АССЕТОВ / 001</span>
+      </header>
+      <main class="layout">
+        <section class="intro">
+          <div class="eyebrow">ПРОЦЕДУРНЫЕ МОДЕЛИ · 3D PREVIEW</div>
+          <h1>R-01 <span>MODULAR RIFLE</span></h1>
+          <p>Интерактивный просмотр модели. Зажми левую кнопку мыши и вращай объект. Колесо — масштаб.</p>
+        </section>
+        <section class="viewer-wrap" aria-label="Интерактивная 3D-модель винтовки">
+          <div id="viewer"></div>
+          <div class="viewer-label"><span class="live-dot"></span> LIVE PREVIEW <span class="separator">/</span> R-01</div>
+          <div class="viewer-hint">DRAG TO ROTATE&nbsp;&nbsp;·&nbsp;&nbsp;SCROLL TO ZOOM</div>
+          <div class="viewer-controls">
+            <button id="front" type="button" aria-label="Вид сбоку">СБОКУ</button>
+            <button id="top" type="button" aria-label="Вид сверху">СВЕРХУ</button>
+            <button id="reset" type="button" aria-label="Сбросить обзор">СБРОС</button>
+          </div>
+        </section>
+        <section class="details">
+          <div class="detail-block"><span class="detail-key">ТИП</span><strong>Штурмовая винтовка</strong></div>
+          <div class="detail-block"><span class="detail-key">КОНСТРУКЦИЯ</span><strong>Модульная · 150+ элементов</strong></div>
+          <div class="detail-block"><span class="detail-key">ИСТОЧНИК</span><strong>Roblox Parts / Luau</strong></div>
+          <div class="detail-block"><span class="detail-key">СТАТУС</span><strong class="status">Демонстрационная модель</strong></div>
+        </section>
+        <footer><span>ROBLOX ASSETS LAB</span><a href="https://github.com/spbRusty/roblox-assets-lab" target="_blank" rel="noreferrer">ОТКРЫТЬ РЕПОЗИТОРИЙ ↗</a></footer>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
