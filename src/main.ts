@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import './style.css'
 
 const host = document.querySelector<HTMLDivElement>('#viewer')
@@ -90,250 +91,50 @@ scene.add(grid)
 const rifle = new THREE.Group()
 scene.add(rifle)
 
-const materials = {
-  main: new THREE.MeshStandardMaterial({ color: '#303639', metalness: 0.72, roughness: 0.38 }),
-  dark: new THREE.MeshStandardMaterial({ color: '#191d20', metalness: 0.78, roughness: 0.34 }),
-  metal: new THREE.MeshStandardMaterial({ color: '#697174', metalness: 0.86, roughness: 0.28 }),
-  accent: new THREE.MeshStandardMaterial({ color: '#665b41', metalness: 0.58, roughness: 0.48 }),
-  polymer: new THREE.MeshStandardMaterial({ color: '#414643', metalness: 0.22, roughness: 0.7 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: '#456f78', metalness: 0.25, roughness: 0.12, transmission: 0.28, transparent: true, opacity: 0.8 }),
-}
+const loader = new FBXLoader()
+loader.load(
+  './models/Quaternius_AssaultRifle2_1.fbx',
+  (model) => {
+    model.name = 'Quaternius_AssaultRifle'
+    model.traverse((node) => {
+      if (!(node instanceof THREE.Mesh)) return
+      node.castShadow = true
+      node.receiveShadow = true
+      if (!node.material) {
+        node.material = new THREE.MeshStandardMaterial({ color: '#777d78', metalness: 0.35, roughness: 0.58 })
+      }
+    })
 
-function box(name: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, material: THREE.Material, rz = 0) {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), material)
-  mesh.name = name
-  mesh.position.set(x, y, z)
-  mesh.rotation.z = THREE.MathUtils.degToRad(rz)
-  mesh.castShadow = true
-  mesh.receiveShadow = true
-  rifle.add(mesh)
-  return mesh
-}
+    // Поворачиваем модель горизонтально по её самой длинной оси.
+    let bounds = new THREE.Box3().setFromObject(model)
+    let size = bounds.getSize(new THREE.Vector3())
+    if (size.y > size.x && size.y > size.z) model.rotation.z = -Math.PI / 2
+    else if (size.z > size.x && size.z > size.y) model.rotation.y = Math.PI / 2
 
-function cylinderX(name: string, x: number, y: number, z: number, length: number, diameter: number, material: THREE.Material) {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(diameter / 2, diameter / 2, length, 24), material)
-  mesh.name = name
-  mesh.position.set(x, y, z)
-  mesh.rotation.z = Math.PI / 2
-  mesh.castShadow = true
-  mesh.receiveShadow = true
-  rifle.add(mesh)
-  return mesh
-}
+    bounds = new THREE.Box3().setFromObject(model)
+    size = bounds.getSize(new THREE.Vector3())
+    const center = bounds.getCenter(new THREE.Vector3())
+    model.position.sub(center)
+    const longest = Math.max(size.x, size.y, size.z)
+    model.scale.setScalar(9.2 / longest)
+    rifle.add(model)
 
-function cylinderY(name: string, x: number, y: number, z: number, diameter: number, height: number, material: THREE.Material) {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(diameter / 2, diameter / 2, height, 20), material)
-  mesh.name = name
-  mesh.position.set(x, y, z)
-  mesh.castShadow = true
-  rifle.add(mesh)
-  return mesh
-}
-
-// Приклад
-box('Stock_Core', -4.05, 0, 0, 2.25, 0.72, 0.82, materials.polymer)
-box('Stock_Rear_Pad', -5.23, -0.02, 0, 0.22, 0.88, 0.9, materials.dark)
-box('Stock_Top_Ridge', -4.15, 0.43, 0, 1.65, 0.12, 0.7, materials.main)
-box('Stock_Adjustment_Rail', -3.2, -0.04, 0, 0.22, 0.42, 0.88, materials.metal)
-for (let i = 0; i < 4; i++) box('Stock_Slot', -4.75 + i * 0.32, -0.01, -0.416, 0.12, 0.38, 0.025, materials.dark)
-
-// Корпус и ствольная коробка
-box('Lower_Receiver', -0.45, 0, 0, 3.55, 0.82, 0.82, materials.main)
-box('Upper_Receiver', -0.25, 0.48, 0, 3.2, 0.24, 0.72, materials.dark)
-box('Left_Receiver_Panel', -0.35, 0.02, -0.43, 1.75, 0.48, 0.055, materials.polymer)
-box('Right_Receiver_Panel', -0.35, 0.02, 0.43, 1.75, 0.48, 0.055, materials.polymer)
-box('Ejection_Port', 0.65, 0.17, -0.47, 0.7, 0.22, 0.035, materials.dark)
-box('Ejection_Port_Cover', 0.65, 0.31, -0.49, 0.58, 0.055, 0.035, materials.metal)
-box('Charging_Handle', -0.95, 0.57, -0.47, 0.48, 0.12, 0.12, materials.metal)
-
-// Цевьё, ствол и дульная часть
-box('Handguard_Core', 2, 0.02, 0, 2.65, 0.72, 0.78, materials.polymer)
-cylinderX('Barrel', 3.55, 0.02, 0, 2.15, 0.24, materials.metal)
-cylinderX('Muzzle_Brake', 4.78, 0.02, 0, 0.5, 0.34, materials.dark)
-cylinderX('Muzzle_Rim', 5.05, 0.02, 0, 0.08, 0.38, materials.metal)
-cylinderX('Gas_Block', 2.72, 0.02, 0, 0.32, 0.48, materials.main)
-box('Gas_Tube', 1.75, 0.48, 0, 1.65, 0.1, 0.12, materials.metal)
-for (let i = 0; i < 6; i++) {
-  const x = 1.05 + i * 0.34
-  box('Vent_Left', x, 0.03, -0.405, 0.19, 0.12, 0.025, materials.dark)
-  box('Vent_Right', x, 0.03, 0.405, 0.19, 0.12, 0.025, materials.dark)
-}
-
-// Верхняя и боковые планки
-box('Top_Rail_Base', 0.55, 0.64, 0, 4.45, 0.12, 0.22, materials.dark)
-for (let i = 0; i < 22; i++) box('Top_Rail_Tooth', -1.55 + i * 0.2, 0.75, 0, 0.105, 0.12, 0.34, materials.metal)
-box('Left_Side_Rail', 1.95, 0.02, -0.47, 2.25, 0.16, 0.12, materials.dark)
-box('Right_Side_Rail', 1.95, 0.02, 0.47, 2.25, 0.16, 0.12, materials.dark)
-for (let i = 0; i < 9; i++) {
-  const x = 1.05 + i * 0.23
-  box('Side_Tooth_Left', x, 0.02, -0.55, 0.12, 0.2, 0.08, materials.metal)
-  box('Side_Tooth_Right', x, 0.02, 0.55, 0.12, 0.2, 0.08, materials.metal)
-}
-
-// Рукоять и магазин
-box('Grip_Mount', -0.8, -0.55, 0, 0.62, 0.18, 0.58, materials.dark)
-const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.34, 1.05, 4), materials.polymer)
-grip.name = 'Pistol_Grip'
-grip.position.set(-0.72, -1.03, 0)
-grip.rotation.z = -0.12
-grip.castShadow = true
-rifle.add(grip)
-box('Grip_Base', -0.55, -1.53, 0, 0.55, 0.14, 0.65, materials.dark)
-for (let i = 0; i < 4; i++) box('Grip_Texture', -0.84, -0.82 - i * 0.17, -0.326, 0.42, 0.035, 0.025, materials.dark)
-box('Magazine_Neck', 0.15, -0.55, 0, 0.62, 0.36, 0.58, materials.dark)
-box('Magazine_Body', 0.18, -1.05, 0, 0.72, 0.78, 0.62, materials.polymer, -5)
-box('Magazine_Lower', 0.23, -1.48, 0, 0.66, 0.16, 0.58, materials.dark, -5)
-box('Magazine_Floorplate', 0.23, -1.59, 0, 0.78, 0.1, 0.68, materials.metal, -5)
-for (let i = 0; i < 5; i++) box('Magazine_Rib', 0.18, -0.82 - i * 0.13, -0.323, 0.48, 0.035, 0.025, materials.dark)
-
-// Спусковая скоба и органы управления
-box('Trigger_Guard_Top', -0.72, -0.42, 0, 0.72, 0.09, 0.48, materials.metal)
-box('Trigger_Guard_Front', -0.38, -0.58, 0, 0.09, 0.25, 0.48, materials.metal)
-box('Trigger_Guard_Rear', -1.05, -0.58, 0, 0.09, 0.25, 0.48, materials.metal)
-box('Trigger', -0.72, -0.52, 0, 0.08, 0.25, 0.1, materials.metal, -12)
-cylinderY('Selector_Axle', -0.95, 0.06, -0.49, 0.18, 0.12, materials.metal)
-box('Selector_Lever', -0.78, 0.08, -0.53, 0.34, 0.07, 0.08, materials.accent, -18)
-
-// Механические прицельные приспособления
-box('Front_Sight_Base', 2.78, 0.88, 0, 0.38, 0.14, 0.42, materials.dark)
-box('Front_Sight_Post', 2.78, 1.12, 0, 0.07, 0.38, 0.07, materials.metal)
-box('Front_Sight_Hood_L', 2.58, 1.12, 0, 0.07, 0.34, 0.1, materials.metal)
-box('Front_Sight_Hood_R', 2.98, 1.12, 0, 0.07, 0.34, 0.1, materials.metal)
-box('Rear_Sight_Base', -1.18, 0.9, 0, 0.42, 0.16, 0.38, materials.dark)
-box('Rear_Sight_Housing', -1.18, 1.08, 0, 0.34, 0.22, 0.32, materials.metal)
-box('Rear_Sight_Aperture', -1.18, 1.1, 0, 0.12, 0.13, 0.34, materials.dark)
-
-// Компактный оптический модуль
-box('Optic_Mount', 0, 0.92, 0, 0.68, 0.18, 0.48, materials.dark)
-box('Optic_Body', 0, 1.2, 0, 0.78, 0.42, 0.54, materials.main)
-cylinderX('Optic_Front_Ring', 0.42, 1.2, 0, 0.12, 0.5, materials.metal)
-cylinderX('Optic_Rear_Ring', -0.42, 1.2, 0, 0.12, 0.5, materials.metal)
-box('Optic_Glass_Front', 0.49, 1.2, 0, 0.025, 0.32, 0.32, materials.glass)
-box('Optic_Glass_Rear', -0.49, 1.2, 0, 0.025, 0.32, 0.32, materials.glass)
-box('Optic_Turret', 0, 1.49, 0, 0.22, 0.16, 0.22, materials.dark)
-cylinderY('Optic_Turret_Cap', 0, 1.59, 0, 0.28, 0.06, materials.metal)
-
-// Крепёж и маркировочные элементы
-for (const side of [-1, 1]) {
-  for (let i = 0; i < 4; i++) cylinderY('Receiver_Fastener', -1.05 + i * 0.43, 0.04, side * 0.475, 0.09, 0.035, materials.metal)
-  for (let i = 0; i < 5; i++) box('Handguard_Mark', 1.05 + i * 0.32, 0.34, side * 0.414, 0.12, 0.035, 0.025, materials.accent)
-}
-box('Rear_Sling_Lug', -3, -0.32, 0, 0.18, 0.16, 0.94, materials.metal)
-box('Front_Sling_Lug', 2.55, -0.34, 0, 0.16, 0.14, 0.9, materials.metal)
-
-
-// Дополнительная геометрия: крепёж, фактура, шарниры и мелкие узлы.
-function cylinderZ(name: string, x: number, y: number, z: number, diameter: number, depth: number, material: THREE.Material) {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(diameter / 2, diameter / 2, depth, 16), material)
-  mesh.name = name
-  mesh.position.set(x, y, z)
-  mesh.rotation.x = Math.PI / 2
-  mesh.castShadow = true
-  mesh.receiveShadow = true
-  rifle.add(mesh)
-  return mesh
-}
-function torus(name: string, x: number, y: number, z: number, radius: number, tube: number, material: THREE.Material, axis: 'x' | 'y' | 'z' = 'z') {
-  const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 10, 28), material)
-  mesh.name = name
-  mesh.position.set(x, y, z)
-  if (axis === 'x') mesh.rotation.y = Math.PI / 2
-  if (axis === 'y') mesh.rotation.x = Math.PI / 2
-  mesh.castShadow = true
-  rifle.add(mesh)
-  return mesh
-}
-
-// Телескопический узел приклада и его направляющие.
-cylinderX('Stock_Buffer_Tube', -2.85, 0.02, 0, 1.05, 0.42, materials.dark)
-cylinderX('Stock_Buffer_Collar', -3.25, 0.02, 0, 0.14, 0.62, materials.metal)
-for (let i = 0; i < 5; i++) {
-  box('Stock_Cheek_Ridge', -4.65 + i * 0.25, 0.49, 0, 0.1, 0.045, 0.72, materials.dark)
-  box('Stock_Side_Groove_L', -4.85 + i * 0.31, 0.02, -0.424, 0.17, 0.055, 0.025, materials.dark)
-  box('Stock_Side_Groove_R', -4.85 + i * 0.31, 0.02, 0.424, 0.17, 0.055, 0.025, materials.dark)
-}
-box('Stock_Adjust_Button', -3.35, -0.25, 0.48, 0.18, 0.22, 0.08, materials.metal)
-torus('Rear_Sling_Ring', -5.12, -0.35, 0, 0.22, 0.045, materials.metal, 'x')
-
-// Фактура цевья: продольные рёбра и отдельные вентиляционные прорези.
-for (let side of [-1, 1]) {
-  for (let i = 0; i < 11; i++) {
-    const x = 0.92 + i * 0.22
-    box('Handguard_Rib', x, 0.405, side * 0.24, 0.11, 0.055, 0.32, materials.main)
-    box('Handguard_Vent_Inner', x, 0.035, side * 0.418, 0.105, 0.055, 0.018, materials.dark)
-  }
-  for (let i = 0; i < 8; i++) {
-    const x = 1.18 + i * 0.25
-    cylinderZ('Handguard_Bolt', x, 0.22, side * 0.435, 0.075, 0.035, materials.metal)
-    box('Handguard_Bolt_Slot', x, 0.22, side * 0.458, 0.04, 0.009, 0.008, materials.dark)
-  }
-}
-
-// Дульный тормоз с видимыми боковыми портами и ступенчатым основанием.
-cylinderX('Muzzle_Collar', 4.42, 0.02, 0, 0.18, 0.31, materials.metal)
-cylinderX('Muzzle_Outer_Sleeve', 4.82, 0.02, 0, 0.34, 0.39, materials.main)
-for (let side of [-1, 1]) {
-  for (let i = 0; i < 3; i++) {
-    box('Muzzle_Port', 4.68 + i * 0.11, 0.13, side * 0.17, 0.075, 0.09, 0.025, materials.dark, -12)
-    box('Muzzle_Port_Lower', 4.68 + i * 0.11, -0.09, side * 0.17, 0.075, 0.07, 0.025, materials.dark, 12)
-  }
-}
-
-// Детализация ствольной коробки: штифты, швы панелей и органы управления.
-for (let side of [-1, 1]) {
-  for (const [x, y] of [[-1.75, 0.05], [-1.05, 0.05], [-0.15, 0.05], [0.55, 0.05]] as const) {
-    cylinderZ('Receiver_Pin', x, y, side * 0.49, 0.14, 0.045, materials.metal)
-    cylinderZ('Receiver_Pin_Core', x, y, side * 0.518, 0.045, 0.012, materials.dark)
-  }
-  box('Receiver_Seam', -0.25, -0.25, side * 0.47, 1.45, 0.025, 0.018, materials.dark)
-  box('Selector_Indicator', -0.76, 0.17, side * 0.49, 0.22, 0.025, 0.018, materials.metal, -18)
-  cylinderZ('Bolt_Catch', -1.22, -0.12, side * 0.5, 0.13, 0.05, materials.metal)
-  box('Bolt_Catch_Tab', -1.28, -0.13, side * 0.54, 0.2, 0.07, 0.045, materials.dark)
-}
-
-// Увеличенная фактура рукояти и пятка магазина.
-for (let side of [-1, 1]) {
-  for (let i = 0; i < 6; i++) {
-    box('Grip_Checkering', -0.83, -0.73 - i * 0.12, side * 0.335, 0.34, 0.025, 0.018, materials.dark, -8)
-  }
-  for (let i = 0; i < 4; i++) {
-    box('Magazine_Groove', 0.18, -0.72 - i * 0.16, side * 0.325, 0.5, 0.025, 0.018, materials.dark, -5)
-  }
-}
-box('Magazine_Release', 0.62, -0.1, 0.51, 0.18, 0.12, 0.08, materials.metal)
-box('Magazine_Follower_Lip', 0.18, -0.56, 0, 0.55, 0.06, 0.5, materials.metal)
-
-// Оптика: защитные бленды, барабаны поправок и насечки.
-cylinderX('Optic_Sunshade_Front', 0.57, 1.2, 0, 0.18, 0.57, materials.dark)
-cylinderX('Optic_Sunshade_Rear', -0.57, 1.2, 0, 0.14, 0.56, materials.dark)
-cylinderX('Optic_Ring_Trim_Front', 0.68, 1.2, 0, 0.035, 0.52, materials.metal)
-cylinderX('Optic_Ring_Trim_Rear', -0.66, 1.2, 0, 0.035, 0.52, materials.metal)
-cylinderY('Optic_Windage', 0.0, 1.48, 0.34, 0.2, 0.22, materials.metal)
-cylinderY('Optic_Elevation', 0.0, 1.48, -0.34, 0.2, 0.22, materials.metal)
-for (let i = 0; i < 12; i++) {
-  const a = (i / 12) * Math.PI * 2
-  box('Optic_Turret_Knurled', Math.cos(a) * 0.15, 1.61, Math.sin(a) * 0.15, 0.045, 0.055, 0.045, materials.dark)
-}
-
-// Прицельные планки, крепления и ременные проушины.
-for (let i = 0; i < 18; i++) {
-  box('Rail_Groove_Left', -1.35 + i * 0.19, 0.81, -0.17, 0.045, 0.018, 0.025, materials.dark)
-  box('Rail_Groove_Right', -1.35 + i * 0.19, 0.81, 0.17, 0.045, 0.018, 0.025, materials.dark)
-}
-for (let side of [-1, 1]) {
-  box('Rail_Clamp_Front', 0.35, 0.87, side * 0.24, 0.18, 0.1, 0.08, materials.metal)
-  box('Rail_Clamp_Rear', -0.32, 0.87, side * 0.24, 0.18, 0.1, 0.08, materials.metal)
-}
-torus('Front_Sling_Ring', 2.62, -0.42, 0, 0.2, 0.04, materials.metal, 'x')
-box('Sling_Swivel_Base', 2.58, -0.34, 0, 0.24, 0.12, 0.72, materials.dark)
-
-// Центрируем модель и выставляем гарантированно близкий боковой ракурс.
-const bounds = new THREE.Box3().setFromObject(rifle)
-const center = bounds.getCenter(new THREE.Vector3())
-rifle.position.set(-center.x, -center.y, -center.z)
-
-camera.position.set(0, 2.1, 9.5)
-camera.lookAt(0, 0, 0)
+    const fitted = new THREE.Box3().setFromObject(rifle)
+    const fittedSize = fitted.getSize(new THREE.Vector3())
+    floor.position.y = -fittedSize.y * 0.72
+    grid.position.y = floor.position.y + 0.015
+    camera.position.set(0, Math.max(1.2, fittedSize.y * 0.28), 11.5)
+    camera.lookAt(0, 0, 0)
+  },
+  undefined,
+  (error) => {
+    console.error('Не удалось загрузить модель Quaternius:', error)
+    const message = document.createElement('div')
+    message.className = 'model-error'
+    message.textContent = 'Не удалось загрузить 3D-модель'
+    host.appendChild(message)
+  },
+)
 
 function resize() {
   if (!host) return
@@ -347,7 +148,6 @@ const observer = new ResizeObserver(resize)
 observer.observe(host)
 resize()
 
-const clock = new THREE.Clock()
 function animate() {
   requestAnimationFrame(animate)
   renderer.render(scene, camera)
@@ -357,5 +157,4 @@ animate()
 window.addEventListener('beforeunload', () => {
   observer.disconnect()
   renderer.dispose()
-  clock.stop()
 })
