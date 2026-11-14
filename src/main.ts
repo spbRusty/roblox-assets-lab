@@ -102,6 +102,8 @@ function createRifle() {
 function createTank() {
   const tank=new THREE.Group()
   const hull=new THREE.Group();tank.add(hull)
+  const trackPads:THREE.Group[]=[]
+  const roadWheels:THREE.Mesh[]=[]
   // Lower hull and angular upper glacis.
   addBox(hull,0,-.05,0,3.65,.72,1.78,M.oliveDark)
   addBox(hull,.28,.34,0,3.05,.62,1.66,M.olive)
@@ -119,23 +121,46 @@ function createTank() {
       addBolt(hull,x-.14,.18,z+side*.16,.035)
       addBolt(hull,x+.14,.18,z+side*.16,.035)
     }
-    // Track loop, road wheels and individual tread shoes.
-    addBox(hull,0,-.55,side*1.02,3.75,.78,.28,M.black)
+    // Continuous hollow track belt, individual steel shoes and visible road wheels.
+    const cy=-.55, cx=1.52, radius=.48
+    const beltShape=new THREE.Shape()
+    beltShape.moveTo(-cx,cy+radius);beltShape.lineTo(cx,cy+radius)
+    beltShape.absarc(cx,cy,radius,Math.PI/2,-Math.PI/2,true)
+    beltShape.lineTo(-cx,cy-radius);beltShape.absarc(-cx,cy,radius,-Math.PI/2,-3*Math.PI/2,true)
+    const hole=new THREE.Path(), ir=.29, ix=1.48
+    hole.moveTo(-ix,cy+ir);hole.lineTo(ix,cy+ir)
+    hole.absarc(ix,cy,ir,Math.PI/2,-Math.PI/2,true)
+    hole.lineTo(-ix,cy-ir);hole.absarc(-ix,cy,ir,-Math.PI/2,-3*Math.PI/2,true)
+    beltShape.holes.push(hole)
+    const belt=new THREE.Mesh(new THREE.ExtrudeGeometry(beltShape,{depth:.2,bevelEnabled:false}),M.black)
+    belt.position.z=side*1.12-.1;belt.castShadow=true;hull.add(belt)
+    const treadCount=48, straight=3.04, arc=Math.PI*radius, perimeter=straight*2+arc*2
+    for(let i=0;i<treadCount;i++){
+      const pad=new THREE.Group()
+      addBox(pad,0,0,0,.17,.105,.205,M.receiver)
+      addBox(pad,0,0,.108,.105,.018,.018,M.metal)
+      addBox(pad,0,0,-.108,.105,.018,.018,M.metal)
+      const d=i/treadCount*perimeter
+      let x:number,y:number,a:number
+      if(d<straight){x=-cx+d;y=cy+radius;a=0}
+      else if(d<straight+arc){a=Math.PI/2-(d-straight)/radius;x=cx+Math.cos(a)*radius;y=cy+Math.sin(a)*radius;a-=Math.PI/2}
+      else if(d<straight*2+arc){const q=d-straight-arc;x=cx-q;y=cy-radius;a=Math.PI}
+      else {const q=-Math.PI/2-(d-straight*2-arc)/radius;x=-cx+Math.cos(q)*radius;y=cy+Math.sin(q)*radius;a=q-Math.PI/2}
+      pad.position.set(x,y,side*1.27);pad.rotation.z=a;hull.add(pad);trackPads.push(pad)
+    }
     for(let i=0;i<7;i++){
       const x=-1.48+i*.49
-      addCylinder(hull,x,-.57,side*1.2,.29,.18,M.darkMetal,'z',24)
-      addCylinder(hull,x,-.57,side*1.305,.19,.035,M.metal,'z',20)
-      addCylinder(hull,x,-.57,side*1.33,.075,.04,M.oliveDark,'z',16)
+      const wheel=addCylinder(hull,x,-.57,side*1.2,.29,.22,M.darkMetal,'z',24);roadWheels.push(wheel)
+      addCylinder(hull,x,-.57,side*1.33,.19,.04,M.metal,'z',20)
+      addCylinder(hull,x,-.57,side*1.36,.075,.045,M.oliveDark,'z',16)
     }
-    for(let i=0;i<17;i++){
-      const x=-1.78+i*.22
-      addBox(hull,x,-.12,side*1.19,.16,.09,.12,M.metal,0)
-      addBox(hull,x,-.98,side*1.19,.16,.09,.12,M.metal,0)
-    }
-    // Front and rear track idlers.
     for(const x of [-1.82,1.82]){
-      addCylinder(hull,x,-.55,side*1.2,.31,.2,M.darkMetal,'z',24)
-      addCylinder(hull,x,-.55,side*1.32,.18,.04,M.metal,'z',20)
+      const idler=addCylinder(hull,x,-.55,side*1.2,.34,.22,M.darkMetal,'z',28);roadWheels.push(idler)
+      addCylinder(hull,x,-.55,side*1.33,.2,.045,M.metal,'z',24)
+      for(let tooth=0;tooth<12;tooth++){
+        const a=tooth*Math.PI/6
+        addBox(hull,x+Math.cos(a)*.34,-.55+Math.sin(a)*.34,side*1.2,.12,.1,.24,M.metal,0,a)
+      }
     }
     // Side-mounted fuel cans and tow hooks.
     addBox(hull,-1.35,.43,z+side*.12,.34,.38,.18,M.oliveDark)
@@ -152,7 +177,7 @@ function createTank() {
   // Turret ring and angular turret body.
   addCylinder(tank,.12,.66,0,.78,.24,M.darkMetal,'y',32)
   addCylinder(tank,.12,.79,0,.7,.12,M.metal,'y',32)
-  const turret=new THREE.Group();turret.position.set(.12,.83,0);tank.add(turret)
+  const turret=new THREE.Group();turret.name='animated-turret';turret.position.set(.12,.83,0);tank.add(turret)
   addBox(turret,-.05,.12,0,1.9,.72,1.48,M.olive)
   addBox(turret,.02,.48,0,1.42,.18,1.22,M.oliveDark)
   addBox(turret,.72,.18,0,.48,.58,1.25,M.oliveDark,-.12)
@@ -165,12 +190,13 @@ function createTank() {
     addBox(turret,-.62,.5,side*.5,.3,.16,.22,M.darkMetal)
     addBox(turret,-.62,.59,side*.5,.18,.04,.16,M.orange)
   }
-  // Main cannon with thermal sleeve, muzzle brake and bore.
-  addCylinder(turret,1.28,.28,0,.14,2.2,M.darkMetal,'x',24)
-  addCylinder(turret,1.05,.28,0,.205,.62,M.oliveDark,'x',24)
-  addCylinder(turret,2.23,.28,0,.19,.42,M.metal,'x',24)
-  addCylinder(turret,2.47,.28,0,.16,.06,M.black,'x',24)
-  for(let i=0;i<4;i++)addBox(turret,2.3,.28,.18,.07,.12,.045,M.orange,0,i*Math.PI/2)
+  // Elevating cannon assembly pivots independently from the turret.
+  const barrel=new THREE.Group();barrel.name='animated-barrel';barrel.position.set(1.02,.28,0);turret.add(barrel)
+  addCylinder(barrel,.88,0,0,.14,2.2,M.darkMetal,'x',24)
+  addCylinder(barrel,.65,0,0,.205,.62,M.oliveDark,'x',24)
+  addCylinder(barrel,1.83,0,0,.19,.42,M.metal,'x',24)
+  addCylinder(barrel,2.07,0,0,.16,.06,M.black,'x',24)
+  for(let i=0;i<4;i++)addBox(barrel,1.95,0,.18,.07,.12,.045,M.orange,0,i*Math.PI/2)
   // Mantlet and coaxial machine gun.
   addBox(turret,.88,.28,0,.48,.5,.62,M.oliveDark)
   addCylinder(turret,1.05,.05,.36,.055,1.15,M.darkMetal,'x',16)
@@ -200,6 +226,11 @@ function createTank() {
   // Broad rear tow bar.
   addBox(hull,-2.02,-.28,0,.24,.16,.82,M.darkMetal)
   addCylinder(hull,-2.17,-.28,0,.09,.38,M.metal,'z',16)
+  tank.userData.trackPads=trackPads
+  tank.userData.roadWheels=roadWheels
+  tank.userData.hull=hull
+  tank.userData.turret=turret
+  tank.userData.barrel=barrel
   return tank
 }
 
@@ -271,6 +302,38 @@ renderer.domElement.addEventListener('wheel',e=>{
   const distance=camera.position.distanceTo(target);camera.position.set(target.x+.2,target.y+.15,distance*(zoom<1?1.06:.94));camera.lookAt(target)
 },{passive:false})
 let frame=0
-function animate(){frame=requestAnimationFrame(animate);renderer.render(scene,camera)}
+const clock=new THREE.Clock()
+function animate(){
+  frame=requestAnimationFrame(animate)
+  const t=clock.getElapsedTime()
+  if(active==='tank'){
+    const tank=models.tank
+    const hull=tank.userData.hull as THREE.Group
+    const turret=tank.userData.turret as THREE.Group
+    const barrel=tank.userData.barrel as THREE.Group
+    const wheels=tank.userData.roadWheels as THREE.Mesh[]
+    hull.position.y=Math.sin(t*2.1)*.025
+    tank.position.z=Math.sin(t*.8)*.11
+    turret.rotation.y=Math.sin(t*.42)*.48
+    barrel.rotation.z=Math.sin(t*.65)*.035
+    for(const wheel of wheels)wheel.rotation.z=-t*1.8
+    const pads=tank.userData.trackPads as THREE.Group[]
+    const perimeter=2*3.04+2*Math.PI*.48
+    const speed=t*.42
+    for(let i=0;i<pads.length;i++){
+      const sideIndex=Math.floor(i/48), index=i%48
+      const d=((index/48*perimeter+speed)%perimeter+perimeter)%perimeter
+      const cx=1.52,cy=-.55,r=.48,straight=3.04,arc=Math.PI*r
+      let x:number,y:number,a:number
+      if(d<straight){x=-cx+d;y=cy+r;a=0}
+      else if(d<straight+arc){const q=Math.PI/2-(d-straight)/r;x=cx+Math.cos(q)*r;y=cy+Math.sin(q)*r;a=q-Math.PI/2}
+      else if(d<straight*2+arc){const q=d-straight-arc;x=cx-q;y=cy-r;a=Math.PI}
+      else {const q=-Math.PI/2-(d-straight*2-arc)/r;x=-cx+Math.cos(q)*r;y=cy+Math.sin(q)*r;a=q-Math.PI/2}
+      pads[i].position.set(x,y,(sideIndex===0?-1:1)*1.27)
+      pads[i].rotation.z=a
+    }
+  }
+  renderer.render(scene,camera)
+}
 animate()
 window.addEventListener('beforeunload',()=>{cancelAnimationFrame(frame);observer.disconnect();renderer.dispose()})
