@@ -4,7 +4,7 @@ const host=document.querySelector<HTMLDivElement>('#viewer')
 if(!host) throw new Error('3D viewer container was not found')
 const viewer: HTMLDivElement = host
 const scene=new THREE.Scene(); scene.background=new THREE.Color('#151a17')
-const camera=new THREE.PerspectiveCamera(35,1,.1,100); camera.position.set(.5,1.1,7.8)
+const camera=new THREE.PerspectiveCamera(35,1,.1,100); camera.position.set(.2,.15,9.4)
 const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.25; renderer.shadowMap.enabled=true; viewer.replaceChildren(renderer.domElement)
 scene.add(new THREE.HemisphereLight(0xd9e5d9,0x202820,2))
 const key=new THREE.DirectionalLight(0xfff0d9,3); key.position.set(-3,6,5); key.castShadow=true; scene.add(key)
@@ -40,11 +40,11 @@ box(.95,-.02,.4,1.3,.12,.08,metal);for(let i=0;i<8;i++)box(.38+i*.16,-.02,.46,.0
 // Тень
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.ShadowMaterial({opacity:.22}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.36;floor.receiveShadow=true;scene.add(floor)
 let yaw=-.18,pitch=.12,zoom=1,drag=false,lx=0,ly=0
-function update(){gun.rotation.set(pitch,yaw,0);camera.position.set(.2,.15,7.8/zoom);camera.lookAt(.05,.02,0)}
+function update(){gun.rotation.set(pitch,yaw,0);camera.position.set(.2,.15,9.4/zoom);camera.lookAt(.05,.02,0)}
 update()
 function resize(){const w=viewer.clientWidth,h=viewer.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 const observer=new ResizeObserver(resize);observer.observe(host);resize()
-renderer.domElement.style.cursor='grab';renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;lx=e.clientX;ly=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='grabbing'})
+renderer.domElement.style.position='absolute';renderer.domElement.style.inset='0';renderer.domElement.style.width='100%';renderer.domElement.style.height='100%';renderer.domElement.style.display='block';renderer.domElement.style.cursor='grab';renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;lx=e.clientX;ly=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='grabbing'})
 renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lx)*.008;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-ly)*.006,-1.1,1.1);lx=e.clientX;ly=e.clientY;update()})
 const stop=()=>{drag=false;renderer.domElement.style.cursor='grab'};renderer.domElement.addEventListener('pointerup',stop);renderer.domElement.addEventListener('pointercancel',stop);renderer.domElement.addEventListener('lostpointercapture',stop)
 renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();zoom=THREE.MathUtils.clamp(zoom+(e.deltaY>0?-.08:.08),.65,1.55);update()},{passive:false})
