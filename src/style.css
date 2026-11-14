@@ -95,3 +95,35 @@ footer a:hover { color: #fff; }
   background: linear-gradient(90deg, transparent, rgba(151,170,151,.24), transparent);
   pointer-events: none;
 }
+
+
+/* Asset gallery */
+.gallery-section { margin: 0 0 18px; }
+.gallery-heading { display:flex; justify-content:space-between; margin: 0 0 10px; color:#829087; font: 9px 'IBM Plex Mono',monospace; letter-spacing:.13em; }
+.gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.asset-card {
+  display:flex; align-items:center; gap:14px; min-width:0; padding:12px 14px;
+  border:1px solid #303a33; background:#171e1a; color:#e4e9e5; text-align:left;
+  cursor:pointer; transition:border-color .18s ease,background .18s ease,transform .18s ease;
+}
+.asset-card:hover { border-color:#718b50; background:#1c261e; }
+.asset-card.active { border-color:#a0bb78; background:#222d22; box-shadow:inset 3px 0 #a0bb78; }
+.asset-thumb { position:relative; display:block; flex:0 0 76px; height:48px; overflow:hidden; background:linear-gradient(145deg,#27332d,#18211d); border:1px solid #354239; }
+.asset-thumb::before,.asset-thumb::after,.asset-thumb i { content:""; position:absolute; display:block; }
+.asset-thumb.rifle::before { left:8px; right:8px; top:21px; height:7px; background:#718b50; box-shadow:0 -5px #3d4852,0 5px #28323a; }
+.asset-thumb.rifle::after { left:46px; top:12px; width:22px; height:3px; background:#8997a0; box-shadow:0 3px #28323a; }
+.asset-thumb.rifle i { left:22px; top:26px; width:7px; height:14px; background:#526b3c; transform:rotate(18deg); }
+.asset-thumb.tank::before { left:10px; right:9px; top:22px; height:13px; background:#526b3c; border:2px solid #8997a0; border-radius:2px; box-shadow:0 7px 0 -2px #1b242b; }
+.asset-thumb.tank::after { left:27px; top:13px; width:25px; height:10px; background:#718b50; border-radius:3px 3px 0 0; box-shadow:24px 2px 0 -4px #8997a0; }
+.asset-thumb.tank i { left:43px; top:16px; width:27px; height:3px; background:#8997a0; }
+.asset-copy { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.asset-copy strong { font-size:10px; letter-spacing:.05em; }
+.asset-copy small { color:#8f9b90; font-size:10px; }
+.asset-index { margin-left:auto; color:#84947f; font:10px 'IBM Plex Mono',monospace; }
+@media (max-width:680px) {
+  .gallery { grid-template-columns:1fr; gap:7px; }
+  .asset-card { padding:9px 10px; }
+  .asset-thumb { flex-basis:68px; height:42px; }
+  .asset-copy strong { font-size:9px; }
+  .asset-copy small { font-size:9px; }
+}
