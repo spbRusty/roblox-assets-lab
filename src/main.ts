@@ -198,6 +198,7 @@ const center = bounds.getCenter(new THREE.Vector3())
 rifle.position.sub(center)
 
 function resize() {
+  if (!host) return
   const width = host.clientWidth
   const height = Math.max(host.clientHeight, 320)
   camera.aspect = width / height
