@@ -38,6 +38,7 @@ local function part(name, size, pos, color, material, shape, rot)
     p.Material = material or Enum.Material.Metal
     p.TopSurface = Enum.SurfaceType.Smooth
     p.BottomSurface = Enum.SurfaceType.Smooth
+    p.Anchored = true
     p.CanCollide = false
     p.CastShadow = true
     if shape then p.Shape = shape end
@@ -68,6 +69,7 @@ local function wedge(name, x, y, z, sx, sy, sz, color, rz)
     p.Position = v(x, y, z)
     p.Color = color
     p.Material = Enum.Material.SmoothPlastic
+    p.Anchored = true
     p.CanCollide = false
     p.TopSurface = Enum.SurfaceType.Smooth
     p.BottomSurface = Enum.SurfaceType.Smooth
