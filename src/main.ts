@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import './style.css'
 
 const host = document.querySelector<HTMLDivElement>('#viewer')
@@ -220,6 +221,18 @@ document.querySelector<HTMLButtonElement>('#top')?.addEventListener('click', () 
 document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
   camera.position.set(8.8, 5.2, 10.5)
   controls.target.set(0, 0, 0)
+})
+
+document.querySelector<HTMLButtonElement>('#download')?.addEventListener('click', () => {
+  const exporter = new OBJExporter()
+  const obj = exporter.parse(rifle)
+  const blob = new Blob([obj], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'R01_Rifle.obj'
+  link.click()
+  URL.revokeObjectURL(url)
 })
 
 const clock = new THREE.Clock()
