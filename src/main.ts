@@ -311,12 +311,10 @@ function animate(){
     const hull=tank.userData.hull as THREE.Group
     const turret=tank.userData.turret as THREE.Group
     const barrel=tank.userData.barrel as THREE.Group
-    const wheels=tank.userData.roadWheels as THREE.Mesh[]
     hull.position.y=Math.sin(t*2.1)*.025
     tank.position.z=Math.sin(t*.8)*.11
     turret.rotation.y=Math.sin(t*.42)*.48
     barrel.rotation.z=Math.sin(t*.65)*.035
-    for(const wheel of wheels)wheel.rotation.z=-t*1.8
     const pads=tank.userData.trackPads as THREE.Group[]
     const perimeter=2*3.04+2*Math.PI*.48
     const speed=t*.42
